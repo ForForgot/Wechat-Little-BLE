@@ -1,0 +1,20 @@
+<view>Services & Characteristics</view>
+<view wx:for="{{list}}" wx:for-item="item" wx:key="{{item.serviceId}}" class='servicelist'>
+  <view style='color:green;'>{{index}}: {{item.serviceId}}</view>
+  <view wx:for="{{item.characteristics}}" wx:for-item="characteristics">
+    <view>{{characteristics.uuid}}</view>
+    <view wx:if="{{characteristics.properties.read}}" style='display:flex;flex-direction:row;justify-content:flex-start;align-items:center;'>
+      <button size="mini" type="primary" data-serviceId='{{item.serviceId}}' data-characteristicsId='{{characteristics.uuid}}' bindtap='bindButtonRead'>read</button>
+      <!--view class='valuebutton' data-serviceId='{{item.serviceId}}' data-characteristicsId='{{characteristics.uuid}}' bindtap='bindButtonRead'>read</view-->
+      <view class='valuetext'>{{characteristics.readValue}}</view>
+    </view>
+    <view wx:if="{{characteristics.properties.notify}}" style='display:flex;flex-direction:row;justify-content:flex-start;align-items:center;'>
+      <button size="mini" type="primary" data-serviceId='{{item.serviceId}}' data-characteristicsId='{{characteristics.uuid}}' bindtap='bindButtonNotify'>notify</button>
+      <view class='valuetext'>{{characteristics.notifyValue}}</view>
+    </view>
+    <view wx:if="{{characteristics.properties.write}}" style='display:flex;flex-direction:row;justify-content:flex-start;align-items:center;'>
+      <button size="mini" type="primary" data-serviceId='{{item.serviceId}}' data-characteristicsId='{{characteristics.uuid}}' bindtap='bindButtonWrite'>write</button>
+      <input class='valueinput' bindinput='cmdInput'></input>
+    </view>
+  </view>
+</view>
