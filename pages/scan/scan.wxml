@@ -1,0 +1,14 @@
+<view>Devices List</view>
+<view wx:for="{{devices}}" wx:for-item="device" wx:key="{{device.deviceId}}" 
+data-deviceId="{{device.deviceId}}" 
+data-name="{{device.name}}" 
+data-advertisServiceUUIDs="{{device.advertisServiceUUIDs}}" 
+bindtap="bindViewTap">
+  <view class="devicelist">
+    <view style='display:flex;flex-direction:row;justify-content:space-between'>
+      <text style='color:green'>{{device.name}}</text>
+      <text style='color:red'>{{device.RSSI}}</text>
+    </view>
+    <view>{{device.deviceId}}</view>
+  </view>
+</view>
