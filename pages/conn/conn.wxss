@@ -1,0 +1,21 @@
+.servicelist {
+  margin: 5px;
+  border: 1px solid lightgray;
+  padding: 2px;
+}
+.valuebutton{
+  width: 15%;
+  background-color: lime;
+  border: 1px solid lime;
+  border-radius: 5px;
+}
+.valuetext{
+  width: 85%;
+  background-color: lightgray;
+}
+.valueinput{
+  width: 85%;
+  border: 1px solid lightblue;
+  border-radius: 5px;
+  padding: 2px;
+}
