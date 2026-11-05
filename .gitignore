@@ -1,0 +1,6 @@
+.workbuddy-ai/
+node_modules/
+miniprogram_npm/
+.DS_Store
+*.log
+project.private.config.json

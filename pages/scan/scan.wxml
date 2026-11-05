@@ -1,14 +1,79 @@
-<view>Devices List</view>
-<view wx:for="{{devices}}" wx:for-item="device" wx:key="{{device.deviceId}}" 
-data-deviceId="{{device.deviceId}}" 
-data-name="{{device.name}}" 
-data-advertisServiceUUIDs="{{device.advertisServiceUUIDs}}" 
-bindtap="bindViewTap">
-  <view class="devicelist">
-    <view style='display:flex;flex-direction:row;justify-content:space-between'>
-      <text style='color:green'>{{device.name}}</text>
-      <text style='color:red'>{{device.RSSI}}</text>
+<view class="page page-bottom">
+  <view class="search">
+    <input class="input" placeholder="搜索名称 / MAC / 厂商" value="{{keyword}}" bindinput="onSearch" confirm-type="search" />
+  </view>
+
+  <view class="chips">
+    <view class="chip {{!favoritesOnly && !onlyConnectable && rssiThreshold <= -95 ? 'chip-active' : ''}}" bindtap="resetFilters">全部</view>
+    <view class="chip {{favoritesOnly ? 'chip-active' : ''}}" bindtap="toggleFavorites">已收藏</view>
+    <view class="chip {{onlyConnectable ? 'chip-active' : ''}}" bindtap="toggleConnectable">仅可连接</view>
+    <view class="chip {{rssiThreshold > -95 ? 'chip-active' : ''}}" bindtap="toggleStrong">强信号</view>
+  </view>
+
+  <view wx:if="{{notice}}" class="state-bar state-bar-error" bindtap="openSystemSettings">
+    {{notice}} · 点击前往设置
+  </view>
+  <view wx:else class="state-bar {{scanning ? '' : 'state-bar-warn'}}">
+    <view class="row">
+      <view class="dot {{scanning ? 'dot-on' : 'dot-off'}}"></view>
+      <text>{{scanning ? '扫描中' : '扫描已停止'}} · 发现 {{total}} 台 · 显示 {{devices.length}} 台</text>
     </view>
-    <view>{{device.deviceId}}</view>
+  </view>
+
+  <view wx:if="{{devices.length === 0}}" class="empty">
+    <view class="empty-title">{{total > 0 ? '没有符合条件的设备' : '正在搜索附近的 BLE 设备'}}</view>
+    <view class="empty-desc">{{total > 0 ? '试试放宽筛选条件或清空搜索词' : '请确认系统蓝牙已开启；Android 还需开启定位权限与定位开关'}}</view>
+  </view>
+
+  <view wx:for="{{devices}}" wx:key="deviceId" class="card" bindtap="openDevice" data-deviceid="{{item.deviceId}}">
+    <view class="between">
+      <view class="grow">
+        <view class="title ellipsis">{{item.name}}</view>
+        <view class="subtitle ellipsis">{{item.subtitle}}</view>
+      </view>
+      <view style="text-align:right;margin-left:16rpx;flex-shrink:0">
+        <view class="muted">{{item.rssiText}}</view>
+        <view class="signal" style="justify-content:flex-end;margin-top:8rpx">
+          <view wx:for="{{item.bars}}" wx:for-item="bar" class="bar {{bar.on ? 'bar-on' : ''}}" style="height:{{bar.h}}rpx"></view>
+        </view>
+      </view>
+    </view>
+
+    <view class="row wrap gap8" style="margin-top:16rpx">
+      <text class="badge {{item.connectable ? 'badge-success' : 'badge-warn'}}">{{item.connectable ? '可连接' : '仅广播'}}</text>
+      <text wx:if="{{item.favorite}}" class="badge badge-info">已收藏</text>
+      <text wx:if="{{item.txPower}}" class="badge">TX {{item.txPower}}</text>
+      <text wx:for="{{item.serviceLabels}}" wx:for-item="label" class="badge">{{label}}</text>
+    </view>
+
+    <view class="between" style="margin-top:16rpx">
+      <text class="tiny mono ellipsis" style="max-width:400rpx">{{item.deviceId}}</text>
+      <view class="row gap8">
+        <view class="btn btn-mini" catchtap="toggleFavorite" data-deviceid="{{item.deviceId}}">{{item.favorite ? '取消收藏' : '收藏'}}</view>
+        <view class="btn btn-mini" catchtap="toggleExpand" data-deviceid="{{item.deviceId}}">{{expandedId === item.deviceId ? '收起' : '广播'}}</view>
+      </view>
+    </view>
+
+    <view wx:if="{{expandedId === item.deviceId}}" style="margin-top:20rpx" catchtap="noop">
+      <view class="value-box">
+        <view class="tiny">原始广播数据</view>
+        <view class="mono" style="margin-top:8rpx">{{item.rawHex || '无'}}</view>
+      </view>
+      <view wx:for="{{item.adv}}" wx:for-item="ad" class="row gap12" style="margin-top:14rpx;align-items:flex-start">
+        <text class="badge badge-info" style="flex-shrink:0">{{ad.typeName}}</text>
+        <view class="grow">
+          <text class="muted">{{ad.text || ad.hex}}</text>
+          <view class="tiny mono">{{ad.hex}}</view>
+        </view>
+      </view>
+      <view wx:if="{{item.serviceData.length}}" style="margin-top:16rpx">
+        <view class="tiny">服务数据</view>
+        <view wx:for="{{item.serviceData}}" wx:for-item="sd" class="tiny mono" style="margin-top:6rpx">{{sd.uuid}} · {{sd.hex}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="fixed-bottom">
+    <view class="btn btn-primary btn-block" bindtap="toggleScan">{{scanning ? '停止扫描' : '开始扫描'}}</view>
   </view>
 </view>

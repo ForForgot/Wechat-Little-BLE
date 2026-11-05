@@ -1,0 +1,60 @@
+<view class="page">
+  <view class="section-title">扫描设置</view>
+  <view class="card">
+    <view class="between">
+      <text class="title">RSSI 阈值</text>
+      <text class="badge badge-info">{{settings.rssiThreshold}} dBm</text>
+    </view>
+    <slider min="{{-110}}" max="{{-40}}" step="{{5}}" value="{{settings.rssiThreshold}}" bindchange="onRssi" activeColor="#185FA5" />
+    <view class="tiny">信号弱于该值的设备不会出现在扫描列表中</view>
+
+    <view class="divider"></view>
+    <view class="between">
+      <text class="title">允许重复广播</text>
+      <switch checked="{{settings.allowDuplicates}}" bindchange="onDuplicates" color="#185FA5" />
+    </view>
+    <view class="tiny">开启后可实时刷新 RSSI，但回调频率更高</view>
+
+    <view class="divider"></view>
+    <view class="between">
+      <text class="title">自动停止扫描</text>
+      <text class="badge badge-info">{{settings.scanTimeout}} 秒</text>
+    </view>
+    <slider min="{{0}}" max="{{60}}" step="{{5}}" value="{{settings.scanTimeout}}" bindchange="onTimeout" activeColor="#185FA5" />
+    <view class="tiny">0 表示持续扫描，直到手动停止</view>
+  </view>
+
+  <view class="section-title">连接与数据</view>
+  <view class="card">
+    <view class="between">
+      <text class="title">期望 MTU</text>
+      <text class="badge badge-info">{{settings.mtu}} 字节</text>
+    </view>
+    <slider min="{{23}}" max="{{247}}" step="{{1}}" value="{{settings.mtu}}" bindchange="onMtu" activeColor="#185FA5" />
+    <view class="tiny">仅 Android 支持主动协商；写入会按 MTU-3 自动分包</view>
+
+    <view class="divider"></view>
+    <view class="title">默认数值格式</view>
+    <view class="chips" style="padding:12rpx 0 0">
+      <view wx:for="{{formats}}" wx:for-item="f" class="chip {{settings.defaultFormat === f ? 'chip-active' : ''}}" bindtap="onFormat" data-format="{{f}}">{{f}}</view>
+    </view>
+  </view>
+
+  <view class="section-title">本地数据</view>
+  <view class="card">
+    <view class="between"><text class="muted">通信日志</text><text>{{logCount}} 条</text></view>
+    <view class="between" style="margin-top:12rpx"><text class="muted">收藏设备</text><text>{{favoriteCount}} 台</text></view>
+    <view class="row gap8" style="margin-top:20rpx">
+      <view class="btn btn-mini grow" bindtap="clearLogs">清空日志</view>
+      <view class="btn btn-mini grow" bindtap="clearFavorites">清空收藏</view>
+      <view class="btn btn-mini grow" bindtap="reset">恢复默认</view>
+    </view>
+  </view>
+
+  <view class="section-title">关于</view>
+  <view class="card">
+    <view class="title">BLE 调试工具</view>
+    <view class="muted" style="margin-top:10rpx">对标 nRF Connect 的微信小程序蓝牙调试器</view>
+    <view class="tiny" style="margin-top:12rpx">仅实现中心设备（Central）角色。连接态 RSSI、Descriptor/CCCD 列表与配对管理受微信 BLE 接口限制，暂不可用；iOS 不支持主动 MTU 协商。</view>
+  </view>
+</view>

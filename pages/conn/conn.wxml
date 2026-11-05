@@ -1,20 +1,104 @@
-<view>Services & Characteristics</view>
-<view wx:for="{{list}}" wx:for-item="item" wx:key="{{item.serviceId}}" class='servicelist'>
-  <view style='color:green;'>{{index}}: {{item.serviceId}}</view>
-  <view wx:for="{{item.characteristics}}" wx:for-item="characteristics">
-    <view>{{characteristics.uuid}}</view>
-    <view wx:if="{{characteristics.properties.read}}" style='display:flex;flex-direction:row;justify-content:flex-start;align-items:center;'>
-      <button size="mini" type="primary" data-serviceId='{{item.serviceId}}' data-characteristicsId='{{characteristics.uuid}}' bindtap='bindButtonRead'>read</button>
-      <!--view class='valuebutton' data-serviceId='{{item.serviceId}}' data-characteristicsId='{{characteristics.uuid}}' bindtap='bindButtonRead'>read</view-->
-      <view class='valuetext'>{{characteristics.readValue}}</view>
+<view class="page page-bottom">
+  <view class="card">
+    <view class="between">
+      <view class="grow">
+        <view class="title ellipsis">{{deviceName}}</view>
+        <view class="subtitle mono ellipsis">{{deviceId}}</view>
+      </view>
+      <text class="badge {{connection === 'connected' ? 'badge-success' : (connection === 'connecting' ? 'badge-warn' : 'badge-danger')}}">{{connectionText}}</text>
     </view>
-    <view wx:if="{{characteristics.properties.notify}}" style='display:flex;flex-direction:row;justify-content:flex-start;align-items:center;'>
-      <button size="mini" type="primary" data-serviceId='{{item.serviceId}}' data-characteristicsId='{{characteristics.uuid}}' bindtap='bindButtonNotify'>notify</button>
-      <view class='valuetext'>{{characteristics.notifyValue}}</view>
+    <view class="row wrap gap16" style="margin-top:16rpx">
+      <text class="muted">MTU {{mtu}}</text>
+      <text wx:if="{{rssi}}" class="muted">RSSI {{rssi}}</text>
+      <text class="muted">{{services.length}} 个服务</text>
     </view>
-    <view wx:if="{{characteristics.properties.write}}" style='display:flex;flex-direction:row;justify-content:flex-start;align-items:center;'>
-      <button size="mini" type="primary" data-serviceId='{{item.serviceId}}' data-characteristicsId='{{characteristics.uuid}}' bindtap='bindButtonWrite'>write</button>
-      <input class='valueinput' bindinput='cmdInput'></input>
+    <view class="row wrap gap8" style="margin-top:20rpx">
+      <view class="btn btn-mini" bindtap="bindReconnect">重新连接</view>
+      <view class="btn btn-mini" bindtap="bindDisconnect">断开</view>
+      <view class="btn btn-mini btn-ghost" bindtap="gotoLogs">查看日志</view>
+    </view>
+  </view>
+
+  <view wx:if="{{error}}" class="state-bar state-bar-error">{{error}}</view>
+  <view wx:if="{{loading}}" class="state-bar">正在连接并枚举服务与特征值…</view>
+
+  <view class="section-title">数值显示格式</view>
+  <view class="chips" style="padding-bottom:8rpx">
+    <view wx:for="{{formats}}" wx:for-item="f" class="chip {{valueFormat === f ? 'chip-active' : ''}}" bindtap="bindValueFormat" data-format="{{f}}">{{f}}</view>
+  </view>
+
+  <view wx:if="{{!loading && services.length === 0 && !error}}" class="empty">
+    <view class="empty-title">暂无服务</view>
+    <view class="empty-desc">连接成功后会在此列出 GATT 服务与特征值</view>
+  </view>
+
+  <view wx:for="{{services}}" wx:for-item="svc" wx:for-index="si" wx:key="uuid" class="card card-flat">
+    <view class="card-head" bindtap="bindServiceToggle" data-index="{{si}}">
+      <view class="grow">
+        <view class="row wrap gap8">
+          <text class="title">{{svc.label}}</text>
+          <text wx:if="{{svc.system}}" class="badge badge-warn">系统服务</text>
+          <text wx:if="{{svc.isPrimary}}" class="badge badge-info">Primary</text>
+        </view>
+        <view class="tiny mono ellipsis" style="margin-top:6rpx">{{svc.uuid}}</view>
+      </view>
+      <text class="muted" style="flex-shrink:0;margin-left:12rpx">{{svc.expanded ? '收起' : '展开'}} · {{svc.chars.length}}</text>
+    </view>
+
+    <view wx:if="{{svc.expanded}}">
+      <view wx:if="{{svc.error}}" class="state-bar state-bar-error">{{svc.error}}</view>
+      <view wx:for="{{svc.chars}}" wx:for-item="c" wx:for-index="ci" wx:key="uuid" class="list-item">
+        <view class="between">
+          <view class="grow">
+            <view class="strong ellipsis">{{c.label}}</view>
+            <view class="tiny mono ellipsis">{{c.uuid}}</view>
+          </view>
+          <text wx:if="{{c.notifying}}" class="badge badge-success" style="flex-shrink:0">订阅中</text>
+        </view>
+        <view class="row wrap gap8" style="margin-top:12rpx">
+          <text wx:for="{{c.propBadges}}" wx:for-item="p" class="badge {{p.cls}}">{{p.text}}</text>
+        </view>
+        <view wx:if="{{c.valueHex}}" class="value-box" style="margin-top:12rpx">
+          <view class="mono">{{c.valueText}}</view>
+          <view wx:if="{{c.parsed}}" class="muted" style="margin-top:6rpx">解析值：{{c.parsed}}</view>
+        </view>
+        <view class="row wrap gap8" style="margin-top:14rpx">
+          <view wx:if="{{c.props.read}}" class="btn btn-mini" bindtap="bindRead" data-si="{{si}}" data-ci="{{ci}}">读取</view>
+          <view wx:if="{{c.canNotify}}" class="btn btn-mini {{c.notifying ? 'btn-primary' : ''}}" bindtap="bindNotify" data-si="{{si}}" data-ci="{{ci}}">{{c.notifying ? '取消订阅' : '订阅'}}</view>
+          <view wx:if="{{c.canWrite}}" class="btn btn-mini btn-ghost" bindtap="bindWriteOpen" data-si="{{si}}" data-ci="{{ci}}">写入</view>
+        </view>
+      </view>
+      <view wx:if="{{svc.loaded && svc.chars.length === 0 && !svc.error}}" class="list-item muted">该服务下没有特征值</view>
+    </view>
+  </view>
+
+  <view wx:if="{{recentLogs.length}}" class="card">
+    <view class="between">
+      <text class="title">最近通信</text>
+      <text class="muted" bindtap="gotoLogs">查看全部</text>
+    </view>
+    <view wx:for="{{recentLogs}}" wx:for-item="log" class="row gap12" style="margin-top:12rpx">
+      <text class="tiny mono" style="flex-shrink:0">{{log.time}}</text>
+      <text class="grow muted ellipsis">{{log.title}} {{log.data}}</text>
+    </view>
+  </view>
+
+  <view wx:if="{{showWritePanel}}" class="fixed-bottom">
+    <view class="between" style="margin-bottom:12rpx">
+      <text class="title ellipsis" style="max-width:440rpx">写入 · {{writeTargetLabel}}</text>
+      <text class="muted" bindtap="bindWriteClose">关闭</text>
+    </view>
+    <view class="chips" style="padding:0 0 12rpx">
+      <view wx:for="{{formats}}" wx:for-item="f" class="chip {{writeFormat === f ? 'chip-active' : ''}}" bindtap="bindWriteFormat" data-format="{{f}}">{{f}}</view>
+    </view>
+    <input class="input" placeholder="{{writeFormat === 'HEX' ? '输入十六进制，如 01 02' : '输入内容'}}" value="{{writeText}}" bindinput="onWriteInput" />
+    <view wx:if="{{writeTypeSupported}}" class="row gap8" style="margin-top:12rpx" bindtap="toggleWriteNoResponse">
+      <text class="muted">无响应写入 writeNoResponse</text>
+      <text class="badge {{writeNoResponse ? 'badge-info' : ''}}">{{writeNoResponse ? '开' : '关'}}</text>
+    </view>
+    <view class="row gap12" style="margin-top:16rpx">
+      <view class="btn grow" bindtap="bindWriteClose">取消</view>
+      <view class="btn btn-primary grow" bindtap="bindWriteSend">发送</view>
     </view>
   </view>
 </view>

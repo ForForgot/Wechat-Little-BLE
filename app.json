@@ -1,14 +1,36 @@
 {
-  "pages":[
-    "pages/index/index",
-    "pages/logs/logs",
+  "pages": [
     "pages/scan/scan",
-    "pages/conn/conn"
+    "pages/conn/conn",
+    "pages/logs/logs",
+    "pages/settings/settings"
   ],
-  "window":{
-    "backgroundTextStyle":"light",
-    "navigationBarBackgroundColor": "#fff",
-    "navigationBarTitleText": "BleDemo",
-    "navigationBarTextStyle":"black"
-  }
+  "window": {
+    "backgroundTextStyle": "dark",
+    "backgroundColor": "#F5F7FA",
+    "navigationBarBackgroundColor": "#FFFFFF",
+    "navigationBarTitleText": "BLE 调试工具",
+    "navigationBarTextStyle": "black",
+    "enablePullDownRefresh": false
+  },
+  "tabBar": {
+    "color": "#8A9099",
+    "selectedColor": "#185FA5",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "black",
+    "list": [
+      { "pagePath": "pages/scan/scan", "text": "扫描" },
+      { "pagePath": "pages/logs/logs", "text": "日志" },
+      { "pagePath": "pages/settings/settings", "text": "设置" }
+    ]
+  },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "蓝牙扫描需要定位权限，用于发现附近的低功耗蓝牙设备"
+    }
+  },
+  "requiredPrivateInfos": ["getLocation"],
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents",
+  "sitemapLocation": "sitemap.json"
 }

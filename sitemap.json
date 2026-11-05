@@ -1,0 +1,9 @@
+{
+  "desc": "BLE 调试工具，不参与微信索引",
+  "rules": [
+    {
+      "action": "disallow",
+      "page": "*"
+    }
+  ]
+}

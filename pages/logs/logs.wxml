@@ -1,6 +1,34 @@
-<!--logs.wxml-->
-<view class="container log-list">
-  <block wx:for="{{logs}}" wx:for-item="log" wx:key="*this">
-    <text class="log-item">{{index + 1}}. {{log}}</text>
-  </block>
+<view class="page page-bottom">
+  <view class="search">
+    <input class="input" placeholder="搜索日志内容或数据" value="{{keyword}}" bindinput="onSearch" />
+  </view>
+
+  <view class="chips">
+    <view wx:for="{{filters}}" wx:for-item="f" class="chip {{filter === f.key ? 'chip-active' : ''}}" bindtap="setFilter" data-key="{{f.key}}">{{f.label}}</view>
+  </view>
+
+  <view class="state-bar">
+    <view class="row"><view class="dot dot-on"></view><text>共 {{total}} 条记录 · 当前显示 {{logs.length}} 条</text></view>
+  </view>
+
+  <view wx:if="{{logs.length === 0}}" class="empty">
+    <view class="empty-title">暂无日志</view>
+    <view class="empty-desc">扫描、连接、读写与订阅事件都会记录在这里</view>
+  </view>
+
+  <view class="card card-flat">
+    <view wx:for="{{logs}}" wx:key="id" class="list-item" bindtap="bindItem" data-data="{{item.data}}">
+      <view class="row gap12">
+        <text class="log-dir {{item.dirClass}}">{{item.dirLabel}}</text>
+        <text class="tiny mono" style="flex-shrink:0">{{item.time}}</text>
+        <text class="grow title ellipsis {{item.ok ? '' : 'badge-danger'}}" style="font-size:26rpx">{{item.title}}</text>
+      </view>
+      <view wx:if="{{item.data}}" class="value-box mono" style="margin-top:10rpx">{{item.data}}</view>
+    </view>
+  </view>
+
+  <view class="fixed-bottom row gap12">
+    <view class="btn grow" bindtap="copyLogs">复制当前结果</view>
+    <view class="btn btn-danger grow" bindtap="clearLogs">清空日志</view>
+  </view>
 </view>

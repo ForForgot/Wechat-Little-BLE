@@ -1,9 +1,6 @@
-.devicelist {
-  margin: 5px;
-  border: 1px solid lightgray;
-  border-radius: 10px;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
+.card { padding: 24rpx; }
+.card .title { max-width: 420rpx; }
+.card .subtitle { max-width: 420rpx; }
+.signal { min-width: 60rpx; }
+.badge { margin-right: 8rpx; margin-bottom: 6rpx; }
+.chip { font-size: 24rpx; padding: 10rpx 22rpx; }

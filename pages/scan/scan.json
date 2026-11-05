@@ -1,4 +1,5 @@
 {
-  "navigationBarTitleText": "Scan Devices",
-  "enablePullDownRefresh": true
+  "navigationBarTitleText": "设备扫描",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark"
 }

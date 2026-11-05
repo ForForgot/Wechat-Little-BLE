@@ -1,21 +1,6 @@
-.servicelist {
-  margin: 5px;
-  border: 1px solid lightgray;
-  padding: 2px;
-}
-.valuebutton{
-  width: 15%;
-  background-color: lime;
-  border: 1px solid lime;
-  border-radius: 5px;
-}
-.valuetext{
-  width: 85%;
-  background-color: lightgray;
-}
-.valueinput{
-  width: 85%;
-  border: 1px solid lightblue;
-  border-radius: 5px;
-  padding: 2px;
-}
+.card-head { padding: 22rpx 24rpx; }
+.list-item { padding: 22rpx 24rpx; }
+.list-item .ellipsis { max-width: 480rpx; }
+.value-box { line-height: 1.7; }
+.badge { margin-right: 8rpx; }
+.chip { padding: 8rpx 20rpx; }

@@ -1,0 +1,3 @@
+.card { padding: 24rpx; }
+slider { margin: 12rpx 0 4rpx; }
+.chip { padding: 8rpx 20rpx; }

@@ -1,8 +1,2 @@
-.log-list {
-  display: flex;
-  flex-direction: column;
-  padding: 40rpx;
-}
-.log-item {
-  margin: 10rpx;
-}
+.list-item { padding: 20rpx 24rpx; }
+.value-box { line-height: 1.6; }
