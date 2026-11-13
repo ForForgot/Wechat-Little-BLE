@@ -1,0 +1,11 @@
+.stat-grid { display: flex; gap: 12rpx; }
+.stat-cell {
+  flex: 1;
+  min-width: 0;
+  background: #F7F9FC;
+  border-radius: 12rpx;
+  padding: 16rpx 12rpx;
+  text-align: center;
+}
+.stat-num { font-size: 34rpx; font-weight: 500; color: #1F2329; margin-top: 6rpx; }
+canvas { display: block; }

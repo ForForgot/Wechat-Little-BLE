@@ -3,6 +3,9 @@ const ble = require('../../utils/ble.js')
 const logger = require('../../utils/logger.js')
 const format = require('../../utils/format.js')
 const uuids = require('../../utils/uuids.js')
+const commandStore = require('../../utils/commands.js')
+const macroStore = require('../../utils/macros.js')
+const runner = require('../../utils/macro-runner.js')
 
 const FORMATS = ['HEX', 'UTF8', 'DEC', 'BIN']
 
@@ -79,7 +82,16 @@ Page({
     writeFormat: 'HEX',
     writeText: '',
     writeNoResponse: false,
-    writeTypeSupported: false
+    writeTypeSupported: false,
+    savedCommands: [],
+    showMacroPanel: false,
+    macroList: [],
+    macroTargets: [],
+    macroTargetLabels: [],
+    macroTargetIndex: 0,
+    macroTargetLabel: '',
+    macroRunning: false,
+    macroProgress: ''
   },
 
   onLoad: function (options) {
@@ -99,6 +111,7 @@ Page({
       valueFormat: app.getSettings().defaultFormat || 'HEX',
       recentLogs: logger.list().slice(0, 4)
     })
+    this.refreshSavedCommands()
 
     if (!this.data.deviceId) {
       this.setData({ loading: false, error: '缺少设备 ID，请返回扫描页重新选择设备' })
@@ -108,6 +121,11 @@ Page({
   },
 
   onUnload: function () {
+    runner.stop()
+    if (this._logTimer) {
+      clearTimeout(this._logTimer)
+      this._logTimer = null
+    }
     this._unsub.forEach(function (fn) { fn() })
     this._unsub = []
     // 只断开连接，保留适配器与全局监听；扫描页 onShow 会直接继续扫描
@@ -132,7 +150,16 @@ Page({
   },
 
   onLogs: function (entries) {
-    this.setData({ recentLogs: entries.slice(0, 4) })
+    // 高频 notify 下每条都 setData 会拖慢界面，这里合并到 600ms 一次
+    this._pendingLogs = entries
+    if (this._logTimer) return
+    const that = this
+    this._logTimer = setTimeout(function () {
+      that._logTimer = null
+      if (that._pendingLogs) {
+        that.setData({ recentLogs: that._pendingLogs.slice(0, 4) })
+      }
+    }, 600)
   },
 
   onValue: function (evt) {
@@ -169,6 +196,7 @@ Page({
         return that.loadCharacteristics(mapped)
       })
       .then(function () {
+        that.buildMacroTargets()
         that.setData({ loading: false })
       })
       .catch(function (err) {
@@ -203,6 +231,35 @@ Page({
       })
     })
     return chain
+  },
+
+  refreshSavedCommands: function () {
+    this.setData({ savedCommands: commandStore.list() })
+  },
+
+  refreshMacros: function () {
+    const list = macroStore.list().map(function (m) {
+      return { id: m.id, name: m.name, stepCount: m.steps.length }
+    })
+    this.setData({ macroList: list })
+  },
+
+  buildMacroTargets: function () {
+    const targets = []
+    const labels = []
+    this.data.services.forEach(function (svc) {
+      svc.chars.forEach(function (c) {
+        const label = svc.short + ' / ' + c.short + (c.name ? ' ' + c.name : '')
+        targets.push({ serviceUuid: svc.uuid, characteristicUuid: c.uuid, label: label })
+        labels.push(label)
+      })
+    })
+    this.setData({
+      macroTargets: targets,
+      macroTargetLabels: labels,
+      macroTargetIndex: 0,
+      macroTargetLabel: labels[0] || ''
+    })
   },
 
   bindServiceToggle: function (e) {
@@ -273,8 +330,14 @@ Page({
     const svc = this.data.services[si]
     const c = svc.chars[ci]
     this._target = { serviceId: svc.uuid, characteristicId: c.uuid }
+    app.setLastTarget(
+      uuids.shortCode(svc.uuid) || svc.uuid,
+      uuids.shortCode(c.uuid) || c.uuid
+    )
+    this.refreshSavedCommands()
     this.setData({
       showWritePanel: true,
+      showMacroPanel: false,
       writeTargetLabel: c.label,
       writeFormat: this.data.valueFormat,
       writeText: '',
@@ -334,6 +397,116 @@ Page({
       that.setData({ error: '', services: [] })
       wx.showToast({ title: '已断开连接', icon: 'none' })
     })
+  },
+
+  bindUseCommand: function (e) {
+    const cmd = commandStore.get(e.currentTarget.dataset.id)
+    if (!cmd) return
+    this.setData({
+      writeText: cmd.value,
+      writeFormat: cmd.format,
+      writeNoResponse: !!cmd.writeNoResponse
+    })
+    wx.showToast({ title: '已填入 ' + cmd.name, icon: 'none' })
+  },
+
+  bindSaveCommand: function () {
+    const that = this
+    const parsed = format.parseValue(this.data.writeText, this.data.writeFormat)
+    if (!parsed.ok) {
+      wx.showToast({ title: parsed.error, icon: 'none' })
+      return
+    }
+    wx.showModal({
+      title: '存为常用命令',
+      editable: true,
+      placeholderText: '命令名称，如 启动测量',
+      content: '',
+      success: function (res) {
+        if (!res.confirm) return
+        const name = String(res.content || '').trim()
+        if (!name) {
+          wx.showToast({ title: '请填写命令名称', icon: 'none' })
+          return
+        }
+        commandStore.add({
+          name: name,
+          format: that.data.writeFormat,
+          value: that.data.writeText,
+          writeNoResponse: that.data.writeNoResponse,
+          serviceUuid: uuids.shortCode(that._target.serviceId) || that._target.serviceId,
+          characteristicUuid: uuids.shortCode(that._target.characteristicId) || that._target.characteristicId
+        })
+        that.refreshSavedCommands()
+        wx.showToast({ title: '已收藏', icon: 'success' })
+      }
+    })
+  },
+
+  bindMacroOpen: function () {
+    this.refreshMacros()
+    this.buildMacroTargets()
+    this.setData({ showMacroPanel: true, showWritePanel: false, macroProgress: '' })
+  },
+
+  bindMacroClose: function () {
+    this.setData({ showMacroPanel: false })
+  },
+
+  onMacroTargetChange: function (e) {
+    const index = Number(e.detail.value)
+    this.setData({
+      macroTargetIndex: index,
+      macroTargetLabel: this.data.macroTargetLabels[index] || ''
+    })
+  },
+
+  bindMacroRun: function (e) {
+    const that = this
+    if (runner.isRunning() || this.data.macroRunning) {
+      wx.showToast({ title: '已有宏在运行', icon: 'none' })
+      return
+    }
+    if (this.data.connection !== 'connected') {
+      wx.showToast({ title: '请先连接设备', icon: 'none' })
+      return
+    }
+    const macro = macroStore.get(e.currentTarget.dataset.id)
+    if (!macro || !macro.steps.length) {
+      wx.showToast({ title: '该宏没有可执行步骤', icon: 'none' })
+      return
+    }
+    const target = this.data.macroTargets[this.data.macroTargetIndex]
+    if (!target) {
+      wx.showToast({ title: '请先选择目标特征值', icon: 'none' })
+      return
+    }
+
+    this.setData({ macroRunning: true, macroProgress: '准备执行…' })
+    runner.run(macro, {
+      deviceId: this.data.deviceId,
+      serviceUuid: target.serviceUuid,
+      characteristicUuid: target.characteristicUuid,
+      onProgress: function (index, total, label) {
+        that.setData({ macroProgress: '(' + (index + 1) + '/' + total + ') ' + label })
+      },
+      onDone: function (ok, message) {
+        that.setData({ macroRunning: false, macroProgress: message })
+        wx.showToast({ title: message, icon: ok ? 'success' : 'none' })
+      }
+    })
+  },
+
+  bindMacroStop: function () {
+    if (!runner.isRunning()) {
+      wx.showToast({ title: '当前没有运行的宏', icon: 'none' })
+      return
+    }
+    runner.stop()
+  },
+
+  gotoLibrary: function () {
+    wx.switchTab({ url: '/pages/library/library' })
   },
 
   gotoLogs: function () {

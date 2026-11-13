@@ -1,5 +1,6 @@
 const ble = require('./utils/ble.js')
 const logger = require('./utils/logger.js')
+const signal = require('./utils/signal.js')
 
 const SETTINGS_KEY = 'ble_settings'
 const FAVORITES_KEY = 'ble_favorites'
@@ -11,16 +12,19 @@ const DEFAULT_SETTINGS = {
   allowDuplicates: true,
   defaultFormat: 'HEX',
   mtu: 23,
-  scanTimeout: 12
+  scanTimeout: 12,
+  demoMode: false
 }
 
 App({
   globalData: {
     ble: ble,
     logger: logger,
+    signal: signal,
     settings: DEFAULT_SETTINGS,
     favorites: [],
-    activeDevice: null
+    activeDevice: null,
+    lastTarget: { serviceUuid: '', characteristicUuid: '' }
   },
 
   onLaunch: function () {
@@ -28,6 +32,7 @@ App({
     this.globalData.settings = Object.assign({}, DEFAULT_SETTINGS, saved)
     this.globalData.favorites = wx.getStorageSync(FAVORITES_KEY) || []
     ble.configure({ mtu: this.globalData.settings.mtu })
+    ble.setDemoMode(!!this.globalData.settings.demoMode)
     logger.info('system', '小程序启动')
   },
 
@@ -71,6 +76,17 @@ App({
   clearFavorites: function () {
     this.globalData.favorites = []
     wx.setStorageSync(FAVORITES_KEY, [])
+  },
+
+  setLastTarget: function (serviceUuid, characteristicUuid) {
+    this.globalData.lastTarget = {
+      serviceUuid: serviceUuid || '',
+      characteristicUuid: characteristicUuid || ''
+    }
+  },
+
+  getLastTarget: function () {
+    return this.globalData.lastTarget
   },
 
   setActiveDevice: function (device) {

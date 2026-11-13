@@ -4,3 +4,13 @@
 .signal { min-width: 60rpx; }
 .badge { margin-right: 8rpx; margin-bottom: 6rpx; }
 .chip { font-size: 24rpx; padding: 10rpx 22rpx; }
+.spark {
+  display: flex;
+  align-items: flex-end;
+  gap: 3rpx;
+  height: 80rpx;
+  padding: 8rpx 10rpx;
+  background: #F7F9FC;
+  border-radius: 12rpx;
+}
+.spark-bar { flex: 1; min-width: 2rpx; background: #85B7EB; border-radius: 2rpx 2rpx 0 0; }

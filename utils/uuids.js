@@ -58,6 +58,18 @@ function shortCode(uuid) {
   return ''
 }
 
+// 把 16 位短 UUID 或去掉连字符的 128 位字符串展开成标准 128 位形式。
+// 微信 iOS / Android 8.0.9+ 可直接用短 UUID，但补齐后跨平台最稳妥。
+function expand(uuid) {
+  const s = compact(uuid)
+  if (s.length === 4) return '0000' + s + '-0000-1000-8000-00805F9B34FB'
+  if (s.length === 32) {
+    return s.slice(0, 8) + '-' + s.slice(8, 12) + '-' + s.slice(12, 16) +
+      '-' + s.slice(16, 20) + '-' + s.slice(20)
+  }
+  return String(uuid || '')
+}
+
 function displayUuid(uuid) {
   const short = shortCode(uuid)
   if (short) return short
@@ -91,7 +103,9 @@ function decodeValue(uuid, buffer) {
       if (bytes.length < 3) return ''
       return (bytes[1] + (bytes[2] << 8)) + ' bpm'
     }
-    return (bytes.length > 1 ? bytes[1] : bytes[0]) + ' bpm'
+    // 只有 flags 一个字节时没有测量值，不能把 flags 当心率
+    if (bytes.length < 2) return ''
+    return bytes[1] + ' bpm'
   }
   if (short === '2A6E' && bytes.length >= 2) {
     return (bytes[0] + (bytes[1] << 8)) / 100 + ' °C'
@@ -104,6 +118,7 @@ function decodeValue(uuid, buffer) {
 module.exports = {
   compact: compact,
   shortCode: shortCode,
+  expand: expand,
   displayUuid: displayUuid,
   nameOf: nameOf,
   isSystemService: isSystemService,

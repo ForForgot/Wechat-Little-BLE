@@ -1,0 +1,28 @@
+.segment {
+  display: flex;
+  gap: 8rpx;
+  margin: 20rpx 24rpx;
+  padding: 6rpx;
+  background: #FFFFFF;
+  border: 1rpx solid #E3E7ED;
+  border-radius: 16rpx;
+}
+.segment-item {
+  flex: 1;
+  text-align: center;
+  font-size: 26rpx;
+  color: #6B7280;
+  padding: 14rpx 0;
+  border-radius: 12rpx;
+}
+.segment-active { background: #185FA5; color: #FFFFFF; }
+.step-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #EDF0F4;
+}
+.step-row .ellipsis { max-width: 320rpx; }
+.step-row .btn-mini { padding: 6rpx 14rpx; }
+.chip { padding: 8rpx 20rpx; }

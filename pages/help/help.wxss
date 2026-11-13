@@ -1,0 +1,16 @@
+.help-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+  font-size: 26rpx;
+  color: #1F2329;
+  line-height: 1.7;
+  padding: 10rpx 0;
+}
+.help-step .badge { flex-shrink: 0; margin-top: 4rpx; }
+.help-row {
+  padding: 14rpx 0;
+  border-bottom: 1rpx solid #EDF0F4;
+}
+.help-row:last-child { border-bottom: 0; }
+.help-row .title { display: block; margin-bottom: 4rpx; }

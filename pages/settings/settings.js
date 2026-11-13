@@ -1,6 +1,8 @@
 const app = getApp()
 const ble = require('../../utils/ble.js')
 const logger = require('../../utils/logger.js')
+const commandStore = require('../../utils/commands.js')
+const macroStore = require('../../utils/macros.js')
 
 const FORMATS = ['HEX', 'UTF8', 'DEC', 'BIN']
 
@@ -9,7 +11,9 @@ Page({
     formats: FORMATS,
     settings: {},
     logCount: 0,
-    favoriteCount: 0
+    favoriteCount: 0,
+    commandCount: 0,
+    macroCount: 0
   },
 
   onLoad: function () {
@@ -24,7 +28,9 @@ Page({
     this.setData({
       settings: app.getSettings(),
       logCount: logger.list().length,
-      favoriteCount: app.getFavorites().length
+      favoriteCount: app.getFavorites().length,
+      commandCount: commandStore.count(),
+      macroCount: macroStore.list().length
     })
   },
 
@@ -55,6 +61,20 @@ Page({
     this.update({ defaultFormat: e.currentTarget.dataset.format })
   },
 
+  onDemoMode: function (e) {
+    const value = !!e.detail.value
+    // 切换前释放真实适配器 / 演示定时器，回到扫描页时会重新初始化
+    ble.release()
+    ble.setDemoMode(value)
+    app.saveSettings({ demoMode: value })
+    this.sync()
+    wx.showToast({ title: value ? '演示模式已开启' : '演示模式已关闭', icon: 'none' })
+  },
+
+  gotoHelp: function () {
+    wx.navigateTo({ url: '/pages/help/help' })
+  },
+
   clearLogs: function () {
     const that = this
     wx.showModal({
@@ -77,6 +97,21 @@ Page({
       success: function (res) {
         if (!res.confirm) return
         app.clearFavorites()
+        that.sync()
+        wx.showToast({ title: '已清空', icon: 'success' })
+      }
+    })
+  },
+
+  clearLibrary: function () {
+    const that = this
+    wx.showModal({
+      title: '清空调试库',
+      content: '将删除全部常用命令与宏序列，此操作不可撤销。',
+      success: function (res) {
+        if (!res.confirm) return
+        commandStore.clear()
+        macroStore.clear()
         that.sync()
         wx.showToast({ title: '已清空', icon: 'success' })
       }

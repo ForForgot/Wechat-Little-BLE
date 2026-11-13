@@ -1,0 +1,43 @@
+<view class="page">
+  <view class="card">
+    <view class="between">
+      <view class="grow">
+        <view class="title ellipsis">{{deviceName}}</view>
+        <view class="tiny mono ellipsis">{{deviceId}}</view>
+      </view>
+      <text class="badge badge-info">{{current}} dBm</text>
+    </view>
+  </view>
+
+  <view wx:if="{{hint}}" class="state-bar state-bar-warn" bindtap="gotoSettings">
+    {{hint}} · 点击前往设置
+  </view>
+
+  <view class="card">
+    <view class="between">
+      <text class="title">RSSI 曲线</text>
+      <text class="muted">{{count}} 个采样 · {{span}} 秒</text>
+    </view>
+    <canvas type="2d" id="rssiChart" style="width:100%;height:320rpx;margin-top:16rpx"></canvas>
+    <view class="row gap8" style="margin-top:8rpx">
+      <text class="tiny">纵轴 dBm</text>
+      <text class="tiny">·</text>
+      <text class="tiny">每 500 ms 采样，最多保留 90 点</text>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="title">统计</view>
+    <view class="stat-grid" style="margin-top:16rpx">
+      <view class="stat-cell"><view class="muted">当前</view><view class="stat-num">{{current}}</view></view>
+      <view class="stat-cell"><view class="muted">最强</view><view class="stat-num">{{max}}</view></view>
+      <view class="stat-cell"><view class="muted">最弱</view><view class="stat-num">{{min}}</view></view>
+      <view class="stat-cell"><view class="muted">平均</view><view class="stat-num">{{avg}}</view></view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="btn btn-block" bindtap="clearHistory">清空该设备采样</view>
+    <view class="tiny" style="margin-top:12rpx">采样来自扫描广播回调。进入本页时扫描会继续保持，返回扫描页后会自动重启扫描。</view>
+  </view>
+</view>

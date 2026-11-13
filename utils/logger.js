@@ -20,17 +20,30 @@ try {
 
 const listeners = []
 let persistTimer = null
+let forceTimer = null
 
-function persist() {
-  if (persistTimer) return
-  persistTimer = setTimeout(function () {
+function flushPersist() {
+  if (persistTimer) {
+    clearTimeout(persistTimer)
     persistTimer = null
-    try {
-      wx.setStorageSync(KEY, entries.slice(0, MAX))
-    } catch (e) {
-      // 存储配额不足时只保留内存日志
-    }
-  }, 800)
+  }
+  if (forceTimer) {
+    clearTimeout(forceTimer)
+    forceTimer = null
+  }
+  try {
+    wx.setStorageSync(KEY, entries.slice(0, MAX))
+  } catch (e) {
+    // 存储配额不足时只保留内存日志
+  }
+}
+
+// 高频 notify 下不要每条都写 storage：
+// 静默 1.2s 后落盘，持续刷屏时最多每 5s 强制落盘一次。
+function persist() {
+  if (persistTimer) clearTimeout(persistTimer)
+  persistTimer = setTimeout(flushPersist, 1200)
+  if (!forceTimer) forceTimer = setTimeout(flushPersist, 5000)
 }
 
 function notify() {
@@ -90,6 +103,14 @@ module.exports = {
 
   clear: function () {
     entries = []
+    if (persistTimer) {
+      clearTimeout(persistTimer)
+      persistTimer = null
+    }
+    if (forceTimer) {
+      clearTimeout(forceTimer)
+      forceTimer = null
+    }
     try {
       wx.setStorageSync(KEY, [])
     } catch (e) {

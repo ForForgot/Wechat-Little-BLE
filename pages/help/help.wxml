@@ -1,0 +1,44 @@
+<view class="page">
+  <view class="section-title">快速开始</view>
+  <view class="card">
+    <view class="help-step"><text class="badge badge-info">1</text><text>开启手机系统蓝牙；Android 6.0+ 还需授予定位权限并打开定位开关</text></view>
+    <view class="help-step"><text class="badge badge-info">2</text><text>首次进入时阅读并同意隐私协议，随后自动开始扫描</text></view>
+    <view class="help-step"><text class="badge badge-info">3</text><text>在扫描列表点击设备，查看 GATT 服务与特征值</text></view>
+    <view class="help-step"><text class="badge badge-info">4</text><text>对特征值执行读取、写入、订阅，结果实时显示在数值区并记入日志</text></view>
+  </view>
+
+  <view class="section-title">页面功能</view>
+  <view class="card">
+    <view class="help-row"><text class="title">扫描</text><text class="muted">卡片式设备列表、信号强度、筛选与搜索、广播数据解析、RSSI 迷你趋势</text></view>
+    <view class="help-row"><text class="title">信号曲线</text><text class="muted">实时折线图与当前/最强/最弱/平均统计（需开启「允许重复广播」）</text></view>
+    <view class="help-row"><text class="title">设备详情</text><text class="muted">可折叠服务树、UUID 名称、属性徽标、读写与订阅、宏执行</text></view>
+    <view class="help-row"><text class="title">调试库</text><text class="muted">常用命令与宏序列的增删改，支持延时、读取、订阅等步骤</text></view>
+    <view class="help-row"><text class="title">日志</text><text class="muted">按方向筛选、搜索、复制导出与清空</text></view>
+    <view class="help-row"><text class="title">设置</text><text class="muted">RSSI 阈值、重复广播、扫描超时、期望 MTU、默认格式、本地数据清理</text></view>
+  </view>
+
+  <view class="section-title">数据格式与写入</view>
+  <view class="card">
+    <view class="muted">支持 HEX、UTF-8、DEC、BIN 四种输入与显示格式。HEX 可写 01 02 或 0x0102，十进制按空格分隔，二进制需为 8 的倍数位。</view>
+    <view class="muted" style="margin-top:12rpx">写入会按 MTU-3 自动分包；特征值同时支持 Write 与 WriteNoResponse 时可在写入面板切换。已知特征值（电量、心率、温度等）会额外解析成人可读值。</view>
+    <view class="muted" style="margin-top:12rpx">宏步骤中留空的 UUID 会自动使用运行时选定的目标特征值；填写时用「服务/特征」格式，如 180F/2A19。</view>
+  </view>
+
+  <view class="section-title">平台限制</view>
+  <view class="card">
+    <view class="muted">本工具实现的是中心设备（Central）角色。受微信 BLE 接口限制，连接态 RSSI、Descriptor/CCCD 列表与配对管理不可用；iOS 不支持主动 MTU 协商，协商失败时会自动按 20 字节分包；后台运行时扫描会受系统限制。</view>
+  </view>
+
+  <view class="section-title">隐私与本地数据</view>
+  <view class="card">
+    <view class="muted">蓝牙、位置信息与剪贴板权限仅用于设备发现、扫描与日志复制。日志、常用命令、宏与收藏全部保存在本机，不会上传到任何服务器，也不包含第三方 SDK。</view>
+    <view class="muted" style="margin-top:12rpx">可在「设置 → 本地数据」中一键清空日志、收藏与调试库数据。</view>
+  </view>
+
+  <view class="section-title">演示模式</view>
+  <view class="card">
+    <view class="muted">没有蓝牙硬件时，可开启演示模式体验完整流程：模拟设备、GATT 服务、特征值读写与通知数据，不会调用真实蓝牙接口。</view>
+    <view wx:if="{{demoMode}}" class="btn btn-block" style="margin-top:20rpx" bindtap="gotoSettings">演示模式已开启 · 前往设置关闭</view>
+    <view wx:else class="btn btn-primary btn-block" style="margin-top:20rpx" bindtap="enableDemo">开启演示模式</view>
+  </view>
+</view>

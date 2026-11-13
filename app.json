@@ -2,6 +2,9 @@
   "pages": [
     "pages/scan/scan",
     "pages/conn/conn",
+    "pages/signal/signal",
+    "pages/library/library",
+    "pages/help/help",
     "pages/logs/logs",
     "pages/settings/settings"
   ],
@@ -20,6 +23,7 @@
     "borderStyle": "black",
     "list": [
       { "pagePath": "pages/scan/scan", "text": "扫描" },
+      { "pagePath": "pages/library/library", "text": "调试库" },
       { "pagePath": "pages/logs/logs", "text": "日志" },
       { "pagePath": "pages/settings/settings", "text": "设置" }
     ]
@@ -29,7 +33,6 @@
       "desc": "蓝牙扫描需要定位权限，用于发现附近的低功耗蓝牙设备"
     }
   },
-  "requiredPrivateInfos": ["getLocation"],
   "style": "v2",
   "lazyCodeLoading": "requiredComponents",
   "sitemapLocation": "sitemap.json"

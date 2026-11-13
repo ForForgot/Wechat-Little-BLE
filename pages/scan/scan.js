@@ -1,6 +1,8 @@
 const app = getApp()
 const ble = require('../../utils/ble.js')
 const adv = require('../../utils/adv.js')
+const signal = require('../../utils/signal.js')
+const privacy = require('../../utils/privacy.js')
 
 const REFRESH_INTERVAL = 600
 
@@ -29,6 +31,11 @@ function buildSubtitle(info) {
 
 function ensureLocation() {
   return new Promise(function (resolve) {
+    // 演示模式不调用任何真实蓝牙 / 隐私接口，无需定位授权
+    if (app.getSettings().demoMode) {
+      resolve()
+      return
+    }
     let platform = ''
     try {
       platform = (wx.getSystemInfoSync().platform || '').toLowerCase()
@@ -62,6 +69,8 @@ Page({
     onlyConnectable: false,
     favoritesOnly: false,
     notice: '',
+    noticeKind: '',
+    demoMode: false,
     expandedId: '',
     total: 0
   },
@@ -83,12 +92,16 @@ Page({
   },
 
   onShow: function () {
+    this._keepScanning = false
+    this._dirty = true
+    this.setData({ demoMode: !!app.getSettings().demoMode })
     this.startScan()
   },
 
   onHide: function () {
     this.clearScanTimer()
-    ble.stopScan()
+    // 跳到信号曲线页时保持扫描，否则曲线会停止更新
+    if (!this._keepScanning) ble.stopScan()
   },
 
   onUnload: function () {
@@ -151,6 +164,7 @@ Page({
     const threshold = this.data.rssiThreshold
     const onlyConnectable = this.data.onlyConnectable
     const favoritesOnly = this.data.favoritesOnly
+    const expandedId = this.data.expandedId
     const now = Date.now()
     const list = []
 
@@ -172,6 +186,10 @@ Page({
       if (onlyConnectable && !info.connectable) return
       if (favoritesOnly && !app.isFavorite(id)) return
 
+      // 广播明细与趋势图只在展开的设备上渲染，
+      // 避免几十台设备时每次刷新都推送大量无用数据
+      const expanded = id === expandedId
+
       list.push({
         deviceId: id,
         name: info.name,
@@ -185,9 +203,10 @@ Page({
         manufacturer: info.manufacturer,
         localName: info.localName,
         txPower: info.txPower,
-        rawHex: info.rawHex,
-        adv: info.adv,
-        serviceData: info.serviceData
+        rawHex: expanded ? info.rawHex : '',
+        adv: expanded ? info.adv : [],
+        serviceData: expanded ? info.serviceData : [],
+        spark: expanded ? signal.spark(id, 24) : []
       })
     }, this)
 
@@ -200,33 +219,59 @@ Page({
 
   startScan: function (force) {
     const that = this
-    ensureLocation().then(function () {
-      const s = app.getSettings()
-      return ble.startScan({ allowDuplicates: s.allowDuplicates })
-    }).then(function () {
-      if (force) {
-        that._raw = {}
-        that._dirty = true
-        that.flush()
+    // 隐私接口（蓝牙 / 定位 / 剪贴板）必须先同步用户同意状态，
+    // 否则首次 openBluetoothAdapter 会直接失败且不会自动重试
+    const gatePromise = app.getSettings().demoMode
+      ? Promise.resolve({ ok: true, kind: '', message: '' })
+      : privacy.ensure()
+    gatePromise.then(function (gate) {
+      if (!gate.ok) {
+        that.setData({ notice: gate.message, noticeKind: gate.kind, scanning: false })
+        return null
       }
-      that.setData({ notice: '', scanning: true })
-      that.clearScanTimer()
-      const timeout = Number(app.getSettings().scanTimeout) || 0
-      if (timeout > 0) {
-        that._scanTimer = setTimeout(function () {
-          ble.stopScan()
-          wx.showToast({ title: '扫描已自动停止', icon: 'none' })
-        }, timeout * 1000)
-      }
+      return ensureLocation().then(function () {
+        const s = app.getSettings()
+        return ble.startScan({ allowDuplicates: s.allowDuplicates })
+      }).then(function () {
+        if (force) {
+          that._raw = {}
+          that._dirty = true
+          that.flush()
+        }
+        that.setData({ notice: '', noticeKind: '', scanning: true })
+        that.clearScanTimer()
+        const timeout = Number(app.getSettings().scanTimeout) || 0
+        if (timeout > 0) {
+          that._scanTimer = setTimeout(function () {
+            ble.stopScan()
+            wx.showToast({ title: '扫描已自动停止', icon: 'none' })
+          }, timeout * 1000)
+        }
+        return null
+      })
     }).catch(function (err) {
-      let hint = ble.describeError(err)
-      if (err.errCode === 10001) {
+      const privacyHint = privacy.describe(err)
+      let hint = privacyHint || ble.describeError(err)
+      let kind = 'permission'
+      if (privacyHint) {
+        kind = 'config'
+      } else if (err.errCode === 10001) {
         hint = '系统蓝牙未开启或设备不支持 BLE，请打开蓝牙后重试'
       } else if (/location|定位/i.test(hint)) {
         hint = 'Android 需要定位权限与定位开关，请授权后重试'
       }
-      that.setData({ notice: hint, scanning: false })
+      that.setData({ notice: hint, noticeKind: kind, scanning: false })
     })
+  },
+
+  onNoticeAction: function () {
+    // 只有系统权限类问题才跳小程序设置页；隐私与蓝牙关闭都靠重试解决
+    if (this.data.noticeKind === 'permission') {
+      this.openSystemSettings()
+    } else {
+      this.setData({ notice: '', noticeKind: '' })
+      this.startScan()
+    }
   },
 
   toggleScan: function () {
@@ -285,6 +330,9 @@ Page({
   toggleExpand: function (e) {
     const id = e.currentTarget.dataset.deviceid
     this.setData({ expandedId: this.data.expandedId === id ? '' : id })
+    // 明细字段只在展开时下发，展开后需要立刻补一次数据
+    this._dirty = true
+    this.flush()
   },
 
   openDevice: function (e) {
@@ -293,6 +341,15 @@ Page({
     if (!device) return
     app.setActiveDevice(device)
     wx.navigateTo({ url: '/pages/conn/conn?deviceId=' + encodeURIComponent(id) })
+  },
+
+  openSignal: function (e) {
+    const id = e.currentTarget.dataset.deviceid
+    const device = this.data.devices.filter(function (d) { return d.deviceId === id })[0]
+    if (!device) return
+    app.setActiveDevice(device)
+    this._keepScanning = true
+    wx.navigateTo({ url: '/pages/signal/signal?deviceId=' + encodeURIComponent(id) })
   },
 
   noop: function () {},

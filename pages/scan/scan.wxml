@@ -10,8 +10,11 @@
     <view class="chip {{rssiThreshold > -95 ? 'chip-active' : ''}}" bindtap="toggleStrong">强信号</view>
   </view>
 
-  <view wx:if="{{notice}}" class="state-bar state-bar-error" bindtap="openSystemSettings">
-    {{notice}} · 点击前往设置
+  <view wx:if="{{notice}}" class="state-bar state-bar-error">
+    <view class="row">
+      <text class="grow">{{notice}}</text>
+      <view class="btn btn-mini" bindtap="onNoticeAction">{{noticeKind === 'permission' ? '去设置' : (noticeKind === 'privacy' ? '重新授权' : '重试')}}</view>
+    </view>
   </view>
   <view wx:else class="state-bar {{scanning ? '' : 'state-bar-warn'}}">
     <view class="row">
@@ -19,6 +22,8 @@
       <text>{{scanning ? '扫描中' : '扫描已停止'}} · 发现 {{total}} 台 · 显示 {{devices.length}} 台</text>
     </view>
   </view>
+
+  <view wx:if="{{demoMode}}" class="state-bar state-bar-warn">演示模式已开启 · 展示模拟设备，不会调用真实蓝牙</view>
 
   <view wx:if="{{devices.length === 0}}" class="empty">
     <view class="empty-title">{{total > 0 ? '没有符合条件的设备' : '正在搜索附近的 BLE 设备'}}</view>
@@ -47,10 +52,11 @@
     </view>
 
     <view class="between" style="margin-top:16rpx">
-      <text class="tiny mono ellipsis" style="max-width:400rpx">{{item.deviceId}}</text>
+      <text class="tiny mono ellipsis" style="max-width:280rpx">{{item.deviceId}}</text>
       <view class="row gap8">
         <view class="btn btn-mini" catchtap="toggleFavorite" data-deviceid="{{item.deviceId}}">{{item.favorite ? '取消收藏' : '收藏'}}</view>
         <view class="btn btn-mini" catchtap="toggleExpand" data-deviceid="{{item.deviceId}}">{{expandedId === item.deviceId ? '收起' : '广播'}}</view>
+        <view class="btn btn-mini btn-ghost" catchtap="openSignal" data-deviceid="{{item.deviceId}}">曲线</view>
       </view>
     </view>
 
@@ -69,6 +75,12 @@
       <view wx:if="{{item.serviceData.length}}" style="margin-top:16rpx">
         <view class="tiny">服务数据</view>
         <view wx:for="{{item.serviceData}}" wx:for-item="sd" class="tiny mono" style="margin-top:6rpx">{{sd.uuid}} · {{sd.hex}}</view>
+      </view>
+      <view wx:if="{{item.spark.length > 1}}" style="margin-top:20rpx">
+        <view class="tiny">信号趋势 · 最近 {{item.spark.length}} 个采样</view>
+        <view class="spark" style="margin-top:8rpx">
+          <view wx:for="{{item.spark}}" wx:for-item="pt" class="spark-bar" style="height:{{pt.h}}%"></view>
+        </view>
       </view>
     </view>
   </view>

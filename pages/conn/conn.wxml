@@ -15,7 +15,9 @@
     <view class="row wrap gap8" style="margin-top:20rpx">
       <view class="btn btn-mini" bindtap="bindReconnect">重新连接</view>
       <view class="btn btn-mini" bindtap="bindDisconnect">断开</view>
-      <view class="btn btn-mini btn-ghost" bindtap="gotoLogs">查看日志</view>
+      <view class="btn btn-mini btn-ghost" bindtap="bindMacroOpen">宏</view>
+      <view class="btn btn-mini btn-ghost" bindtap="gotoLibrary">调试库</view>
+      <view class="btn btn-mini btn-ghost" bindtap="gotoLogs">日志</view>
     </view>
   </view>
 
@@ -91,14 +93,50 @@
     <view class="chips" style="padding:0 0 12rpx">
       <view wx:for="{{formats}}" wx:for-item="f" class="chip {{writeFormat === f ? 'chip-active' : ''}}" bindtap="bindWriteFormat" data-format="{{f}}">{{f}}</view>
     </view>
+    <view wx:if="{{savedCommands.length}}" style="margin-bottom:12rpx">
+      <view class="tiny">常用命令（点击填入）</view>
+      <view class="chips" style="padding:8rpx 0 0">
+        <view wx:for="{{savedCommands}}" wx:for-item="cmd" class="chip" bindtap="bindUseCommand" data-id="{{cmd.id}}">{{cmd.name}}</view>
+      </view>
+    </view>
     <input class="input" placeholder="{{writeFormat === 'HEX' ? '输入十六进制，如 01 02' : '输入内容'}}" value="{{writeText}}" bindinput="onWriteInput" />
     <view wx:if="{{writeTypeSupported}}" class="row gap8" style="margin-top:12rpx" bindtap="toggleWriteNoResponse">
       <text class="muted">无响应写入 writeNoResponse</text>
       <text class="badge {{writeNoResponse ? 'badge-info' : ''}}">{{writeNoResponse ? '开' : '关'}}</text>
     </view>
-    <view class="row gap12" style="margin-top:16rpx">
+    <view class="row gap8" style="margin-top:16rpx">
       <view class="btn grow" bindtap="bindWriteClose">取消</view>
+      <view class="btn grow" bindtap="bindSaveCommand">存为常用</view>
       <view class="btn btn-primary grow" bindtap="bindWriteSend">发送</view>
+    </view>
+  </view>
+
+  <view wx:if="{{showMacroPanel}}" class="fixed-bottom">
+    <view class="between" style="margin-bottom:12rpx">
+      <text class="title">宏序列</text>
+      <text class="muted" bindtap="bindMacroClose">关闭</text>
+    </view>
+    <view wx:if="{{macroTargetLabels.length}}" class="row gap8" style="margin-bottom:12rpx">
+      <text class="muted" style="flex-shrink:0">目标特征值</text>
+      <picker mode="selector" range="{{macroTargetLabels}}" value="{{macroTargetIndex}}" bindchange="onMacroTargetChange" class="grow">
+        <view class="input ellipsis">{{macroTargetLabel || '请选择'}}</view>
+      </picker>
+    </view>
+    <view wx:else class="state-bar state-bar-warn">尚未读取到特征值，请先连接设备并等待服务枚举完成</view>
+    <view wx:if="{{macroProgress}}" class="state-bar">{{macroProgress}}</view>
+    <view wx:if="{{macroList.length === 0}}" class="empty" style="padding:40rpx">
+      <view class="empty-desc">还没有宏，去「调试库」创建</view>
+    </view>
+    <view wx:for="{{macroList}}" wx:key="id" class="row gap12" style="padding:14rpx 0;border-bottom:1rpx solid #EDF0F4">
+      <view class="grow">
+        <text class="strong">{{item.name}}</text>
+        <text class="muted"> · {{item.stepCount}} 步</text>
+      </view>
+      <view class="btn btn-mini btn-primary" bindtap="bindMacroRun" data-id="{{item.id}}">{{macroRunning ? '运行中' : '运行'}}</view>
+    </view>
+    <view class="row gap12" style="margin-top:16rpx">
+      <view class="btn grow" bindtap="gotoLibrary">管理宏</view>
+      <view class="btn btn-danger grow" bindtap="bindMacroStop">停止</view>
     </view>
   </view>
 </view>

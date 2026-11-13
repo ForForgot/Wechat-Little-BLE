@@ -1,0 +1,103 @@
+<view class="page">
+  <view class="segment">
+    <view class="segment-item {{tab === 'commands' ? 'segment-active' : ''}}" bindtap="switchTab" data-tab="commands">常用命令 {{commands.length}}</view>
+    <view class="segment-item {{tab === 'macros' ? 'segment-active' : ''}}" bindtap="switchTab" data-tab="macros">宏序列 {{macros.length}}</view>
+  </view>
+
+  <block wx:if="{{tab === 'commands'}}">
+    <view class="card">
+      <view class="between">
+        <text class="title">新增命令</text>
+        <text class="muted" bindtap="toggleForm">{{showForm ? '收起' : '展开'}}</text>
+      </view>
+      <view wx:if="{{showForm}}">
+        <input class="input" style="margin-top:16rpx" placeholder="命令名称，如 启动测量" value="{{formName}}" bindinput="onFormName" />
+        <view class="chips" style="padding:12rpx 0">
+          <view wx:for="{{formats}}" wx:for-item="f" class="chip {{formFormat === f ? 'chip-active' : ''}}" bindtap="onFormFormat" data-format="{{f}}">{{f}}</view>
+        </view>
+        <input class="input" placeholder="数据，如 01 02" value="{{formValue}}" bindinput="onFormValue" />
+        <view class="row gap8" style="margin-top:14rpx" bindtap="toggleFormNoResponse">
+          <text class="muted">无响应写入 writeNoResponse</text>
+          <text class="badge {{formNoResponse ? 'badge-info' : ''}}">{{formNoResponse ? '开' : '关'}}</text>
+        </view>
+        <view class="btn btn-primary btn-block" style="margin-top:20rpx" bindtap="saveCommand">保存命令</view>
+      </view>
+    </view>
+
+    <view wx:if="{{commands.length === 0}}" class="empty">
+      <view class="empty-title">还没有收藏的命令</view>
+      <view class="empty-desc">在设备详情页的写入面板里点「存为常用」，或在这里手动新增</view>
+    </view>
+
+    <view wx:if="{{commands.length}}" class="card card-flat">
+      <view wx:for="{{commands}}" wx:key="id" class="list-item">
+        <view class="between">
+          <view class="grow">
+            <view class="strong ellipsis">{{item.name}}</view>
+            <view class="tiny">{{item.format}} · {{item.writeNoResponse ? '无响应写入' : '普通写入'}}</view>
+          </view>
+          <text class="badge badge-info" bindtap="copyCommand" data-id="{{item.id}}">复制</text>
+          <text class="badge badge-danger" style="margin-left:8rpx" bindtap="deleteCommand" data-id="{{item.id}}">删除</text>
+        </view>
+        <view class="value-box mono" style="margin-top:10rpx">{{item.preview || '（空）'}}</view>
+      </view>
+    </view>
+  </block>
+
+  <block wx:if="{{tab === 'macros'}}">
+    <view class="card">
+      <view class="btn btn-primary btn-block" bindtap="createMacro">新建宏</view>
+    </view>
+
+    <view wx:if="{{macros.length === 0}}" class="empty">
+      <view class="empty-title">还没有宏</view>
+      <view class="empty-desc">把常用命令、延时、读取与订阅编排成可一键运行的流程</view>
+    </view>
+
+    <view wx:for="{{macros}}" wx:key="id" class="card card-flat">
+      <view class="card-head" bindtap="toggleMacro" data-id="{{item.id}}">
+        <view class="grow">
+          <text class="title">{{item.name}}</text>
+          <view class="tiny">{{item.stepCount}} 个步骤</view>
+        </view>
+        <text class="muted">{{expandedMacroId === item.id ? '收起' : '展开'}}</text>
+      </view>
+
+      <view wx:if="{{expandedMacroId === item.id}}" class="list-item">
+        <view class="chips" style="padding:0 0 4rpx">
+          <view class="chip" bindtap="addCommandStep" data-id="{{item.id}}">命令</view>
+          <view class="chip" bindtap="addDelayStep" data-id="{{item.id}}">延时</view>
+          <view class="chip" bindtap="addReadStep" data-id="{{item.id}}">读取</view>
+          <view class="chip" bindtap="addNotifyStep" data-id="{{item.id}}">订阅</view>
+        </view>
+
+        <view wx:for="{{item.stepViews}}" wx:for-item="step" wx:key="index" class="step-row">
+          <view class="grow">
+            <view class="row gap8">
+              <text class="badge badge-info">{{step.index + 1}}</text>
+              <text class="strong">{{step.label}}</text>
+            </view>
+            <view class="tiny mono ellipsis" style="margin-top:6rpx">{{step.detail}}</view>
+          </view>
+          <view class="row gap8">
+            <text class="btn btn-mini" bindtap="moveStep" data-id="{{item.id}}" data-index="{{step.index}}" data-dir="-1">上</text>
+            <text class="btn btn-mini" bindtap="moveStep" data-id="{{item.id}}" data-index="{{step.index}}" data-dir="1">下</text>
+            <text class="btn btn-mini" bindtap="toggleStepEnable" data-id="{{item.id}}" data-index="{{step.index}}">切</text>
+            <text class="btn btn-mini btn-danger" bindtap="removeStep" data-id="{{item.id}}" data-index="{{step.index}}">删</text>
+          </view>
+        </view>
+
+        <view wx:if="{{item.stepCount === 0}}" class="tiny" style="padding:16rpx 0">还没有步骤，用上方按钮添加</view>
+
+        <view class="row gap8" style="margin-top:16rpx">
+          <view class="btn btn-mini grow" bindtap="clearSteps" data-id="{{item.id}}">清空步骤</view>
+          <view class="btn btn-mini btn-danger grow" bindtap="deleteMacro" data-id="{{item.id}}">删除宏</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="tiny">运行方式：在设备详情页点击「宏」，选择目标特征值后运行。步骤里留空的 UUID 会自动使用该运行目标；填写时用「服务/特征」格式，如 180F/2A19。</view>
+    </view>
+  </block>
+</view>

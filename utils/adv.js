@@ -100,6 +100,19 @@ function serviceLabel(uuid) {
   return name ? short + ' ' + name : short
 }
 
+// 广播里的 UUID 列表和 advertisServiceUUIDs 同源，会重复，这里去重
+function unique(list) {
+  const seen = {}
+  const out = []
+  for (let i = 0; i < list.length; i++) {
+    const key = String(list[i])
+    if (seen[key]) continue
+    seen[key] = true
+    out.push(list[i])
+  }
+  return out
+}
+
 function summarize(device) {
   const adv = parseAdvertising(device.advertisData)
   let localName = device.localName || ''
@@ -148,7 +161,7 @@ function summarize(device) {
     localName: localName,
     txPower: txPower,
     manufacturer: manufacturer,
-    serviceLabels: serviceLabels,
+    serviceLabels: unique(serviceLabels),
     serviceData: serviceData,
     connectable: connectable,
     adv: adv,

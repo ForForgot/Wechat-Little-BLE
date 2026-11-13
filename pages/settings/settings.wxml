@@ -40,13 +40,29 @@
     </view>
   </view>
 
+  <view class="section-title">演示与帮助</view>
+  <view class="card">
+    <view class="between">
+      <text class="title">演示模式</text>
+      <switch checked="{{settings.demoMode}}" bindchange="onDemoMode" color="#185FA5" />
+    </view>
+    <view class="tiny" style="margin-top:8rpx">开启后展示模拟设备、服务与特征值，无需蓝牙硬件和定位权限，也不会调用真实蓝牙接口</view>
+    <view class="divider"></view>
+    <view class="between" bindtap="gotoHelp">
+      <text class="title">使用说明</text>
+      <text class="muted">查看全部功能与平台限制</text>
+    </view>
+  </view>
+
   <view class="section-title">本地数据</view>
   <view class="card">
     <view class="between"><text class="muted">通信日志</text><text>{{logCount}} 条</text></view>
     <view class="between" style="margin-top:12rpx"><text class="muted">收藏设备</text><text>{{favoriteCount}} 台</text></view>
-    <view class="row gap8" style="margin-top:20rpx">
+    <view class="between" style="margin-top:12rpx"><text class="muted">常用命令 / 宏</text><text>{{commandCount}} 条 / {{macroCount}} 个</text></view>
+    <view class="row gap8" style="margin-top:20rpx;flex-wrap:wrap">
       <view class="btn btn-mini grow" bindtap="clearLogs">清空日志</view>
       <view class="btn btn-mini grow" bindtap="clearFavorites">清空收藏</view>
+      <view class="btn btn-mini grow" bindtap="clearLibrary">清空调试库</view>
       <view class="btn btn-mini grow" bindtap="reset">恢复默认</view>
     </view>
   </view>

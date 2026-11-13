@@ -32,7 +32,7 @@ Page({
   },
 
   onLoad: function () {
-    this._unsub = logger.subscribe(this.refresh.bind(this))
+    this._unsub = logger.subscribe(this.scheduleRefresh.bind(this))
     this.refresh(logger.list())
   },
 
@@ -42,6 +42,20 @@ Page({
 
   onUnload: function () {
     if (this._unsub) this._unsub()
+    if (this._timer) {
+      clearTimeout(this._timer)
+      this._timer = null
+    }
+  },
+
+  // 高频日志时合并刷新，避免每条日志都全量重筛并 setData
+  scheduleRefresh: function () {
+    if (this._timer) return
+    const that = this
+    this._timer = setTimeout(function () {
+      that._timer = null
+      that.refresh(logger.list())
+    }, 500)
   },
 
   refresh: function (entries) {
@@ -93,10 +107,8 @@ Page({
       wx.showToast({ title: '没有可复制的日志', icon: 'none' })
       return
     }
-    wx.setClipboardData({
-      data: lines.join('\n'),
-      success: function () { wx.showToast({ title: '已复制到剪贴板', icon: 'success' }) }
-    })
+    // setClipboardData 自带「内容已复制」提示，无需再加 toast
+    wx.setClipboardData({ data: lines.join('\n') })
   },
 
   bindItem: function (e) {
