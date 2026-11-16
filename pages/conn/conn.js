@@ -56,7 +56,8 @@ function mapService(s, index) {
     label: name ? short + ' ' + name : short,
     isPrimary: !!s.isPrimary,
     system: uuids.isSystemService(s.uuid),
-    expanded: true,
+    // 默认折叠：服务多时先给出总览，避免首屏被特征值占满
+    expanded: false,
     loaded: false,
     error: '',
     chars: []
@@ -348,6 +349,10 @@ Page({
 
   bindWriteClose: function () {
     this.setData({ showWritePanel: false })
+  },
+
+  bindClosePanels: function () {
+    this.setData({ showWritePanel: false, showMacroPanel: false })
   },
 
   onWriteInput: function (e) {

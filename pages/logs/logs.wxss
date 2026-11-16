@@ -1,2 +1,16 @@
 .list-item { padding: 20rpx 24rpx; }
 .value-box { line-height: 1.6; }
+
+.log-date {
+  padding: 16rpx 24rpx 8rpx;
+  font-size: 22rpx;
+  color: #8A9099;
+  background: #FAFBFC;
+  border-bottom: 1rpx solid #EDF0F4;
+}
+.log-error { color: #A32D2D; }
+
+@media (prefers-color-scheme: dark) {
+  .log-date { background: #161B21; color: #9AA3AE; border-bottom-color: #262D36; }
+  .log-error { color: #F09A9A; }
+}

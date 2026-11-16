@@ -23,6 +23,13 @@
   padding: 16rpx 0;
   border-bottom: 1rpx solid #EDF0F4;
 }
-.step-row .ellipsis { max-width: 320rpx; }
-.step-row .btn-mini { padding: 6rpx 14rpx; }
+.step-row .ellipsis { max-width: 300rpx; }
+.step-row .btn-mini { padding: 6rpx 12rpx; }
 .chip { padding: 8rpx 20rpx; }
+
+@media (prefers-color-scheme: dark) {
+  .segment { background: #1A1F26; border-color: #2A313B; }
+  .segment-item { color: #9AA3AE; }
+  .segment-active { background: #2E7FC4; color: #FFFFFF; }
+  .step-row { border-bottom-color: #262D36; }
+}

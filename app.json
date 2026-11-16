@@ -9,23 +9,43 @@
     "pages/settings/settings"
   ],
   "window": {
-    "backgroundTextStyle": "dark",
-    "backgroundColor": "#F5F7FA",
-    "navigationBarBackgroundColor": "#FFFFFF",
+    "backgroundTextStyle": "@bgText",
+    "backgroundColor": "@bg",
+    "navigationBarBackgroundColor": "@navBg",
     "navigationBarTitleText": "BLE 调试工具",
-    "navigationBarTextStyle": "black",
+    "navigationBarTextStyle": "@navText",
     "enablePullDownRefresh": false
   },
   "tabBar": {
-    "color": "#8A9099",
-    "selectedColor": "#185FA5",
-    "backgroundColor": "#FFFFFF",
-    "borderStyle": "black",
+    "color": "@tabColor",
+    "selectedColor": "@tabSelected",
+    "backgroundColor": "@tabBg",
+    "borderStyle": "@tabBorder",
     "list": [
-      { "pagePath": "pages/scan/scan", "text": "扫描" },
-      { "pagePath": "pages/library/library", "text": "调试库" },
-      { "pagePath": "pages/logs/logs", "text": "日志" },
-      { "pagePath": "pages/settings/settings", "text": "设置" }
+      {
+        "pagePath": "pages/scan/scan",
+        "text": "扫描",
+        "iconPath": "@scanIcon",
+        "selectedIconPath": "@scanActive"
+      },
+      {
+        "pagePath": "pages/library/library",
+        "text": "调试库",
+        "iconPath": "@libraryIcon",
+        "selectedIconPath": "@libraryActive"
+      },
+      {
+        "pagePath": "pages/logs/logs",
+        "text": "日志",
+        "iconPath": "@logsIcon",
+        "selectedIconPath": "@logsActive"
+      },
+      {
+        "pagePath": "pages/settings/settings",
+        "text": "设置",
+        "iconPath": "@settingsIcon",
+        "selectedIconPath": "@settingsActive"
+      }
     ]
   },
   "permission": {
@@ -35,5 +55,7 @@
   },
   "style": "v2",
   "lazyCodeLoading": "requiredComponents",
+  "darkmode": true,
+  "themeLocation": "theme.json",
   "sitemapLocation": "sitemap.json"
 }

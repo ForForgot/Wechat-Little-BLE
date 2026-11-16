@@ -11,6 +11,8 @@ const FILTERS = [
 function view(entry) {
   return {
     id: entry.id,
+    sep: false,
+    date: entry.date || '',
     time: entry.time,
     dir: entry.dir,
     dirLabel: entry.dir === 'in' ? '收' : (entry.dir === 'out' ? '发' : '系'),
@@ -28,7 +30,8 @@ Page({
     filter: 'all',
     keyword: '',
     logs: [],
-    total: 0
+    total: 0,
+    shown: 0
   },
 
   onLoad: function () {
@@ -62,6 +65,8 @@ Page({
     const filter = this.data.filter
     const keyword = (this.data.keyword || '').trim().toLowerCase()
     const list = []
+    let shown = 0
+    let lastDate = ''
     for (let i = 0; i < entries.length; i++) {
       const e = entries[i]
       if (filter === 'error' && e.ok !== false) continue
@@ -70,9 +75,16 @@ Page({
         const hay = (e.title + ' ' + e.data).toLowerCase()
         if (hay.indexOf(keyword) < 0) continue
       }
-      list.push(view(e))
+      const item = view(e)
+      // 跨天日志按日期插入分隔行，避免只有时分秒无法区分
+      if (item.date !== lastDate) {
+        lastDate = item.date
+        list.push({ id: 'sep-' + (item.date || 'old'), sep: true, label: item.date || '更早' })
+      }
+      list.push(item)
+      shown++
     }
-    this.setData({ logs: list, total: entries.length })
+    this.setData({ logs: list, total: entries.length, shown: shown })
   },
 
   setFilter: function (e) {
@@ -100,8 +112,9 @@ Page({
   },
 
   copyLogs: function () {
-    const lines = this.data.logs.map(function (e) {
-      return e.time + ' [' + e.dirLabel + '] ' + e.title + (e.data ? ' | ' + e.data : '')
+    const lines = this.data.logs.filter(function (e) { return !e.sep }).map(function (e) {
+      return (e.date ? e.date + ' ' : '') + e.time + ' [' + e.dirLabel + '] ' + e.title +
+        (e.data ? ' | ' + e.data : '')
     })
     if (!lines.length) {
       wx.showToast({ title: '没有可复制的日志', icon: 'none' })

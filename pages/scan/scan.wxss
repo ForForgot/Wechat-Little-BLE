@@ -14,3 +14,8 @@
   border-radius: 12rpx;
 }
 .spark-bar { flex: 1; min-width: 2rpx; background: #85B7EB; border-radius: 2rpx 2rpx 0 0; }
+
+@media (prefers-color-scheme: dark) {
+  .spark { background: #141920; }
+  .spark-bar { background: #4E86B8; }
+}

@@ -5,10 +5,14 @@ function pad(n) {
   return n < 10 ? '0' + n : String(n)
 }
 
-function timestamp() {
+// 日志跨天后要能区分日期，所以同时记录 date 和 time
+function stamp() {
   const d = new Date()
-  return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) +
-    '.' + ('00' + d.getMilliseconds()).slice(-3)
+  return {
+    date: d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()),
+    time: pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) +
+      '.' + ('00' + d.getMilliseconds()).slice(-3)
+  }
 }
 
 let entries = []
@@ -58,9 +62,11 @@ function notify() {
 }
 
 function add(entry) {
+  const now = stamp()
   const item = {
     id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
-    time: timestamp(),
+    date: now.date,
+    time: now.time,
     dir: entry.dir || 'system',
     type: entry.type || 'info',
     title: entry.title || '',

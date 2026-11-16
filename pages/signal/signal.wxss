@@ -9,3 +9,8 @@
 }
 .stat-num { font-size: 34rpx; font-weight: 500; color: #1F2329; margin-top: 6rpx; }
 canvas { display: block; }
+
+@media (prefers-color-scheme: dark) {
+  .stat-cell { background: #141920; }
+  .stat-num { color: #E8EAED; }
+}

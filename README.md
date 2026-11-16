@@ -43,7 +43,7 @@
 | **信号曲线** | canvas 2d 实时折线图（最近 90 个采样、每 500 ms 一点）、当前/最强/最弱/平均统计、清空历史；进入该页时扫描继续保持 |
 | **设备详情** | 连接状态与 MTU 展示、可折叠服务树、Bluetooth SIG UUID 名称字典、属性徽标、四种显示格式、已知特征值语义解析、Read / Write / Notify / Indicate、按 MTU 自动分包写入、writeNoResponse、常用命令填入、宏执行面板 |
 | **调试库** | 常用命令增删改与复制；宏序列编排（写入、延时、读取、订阅开关），步骤支持上下移动、删除、清空；命令过多时自动分页 |
-| **通信日志** | 结构化记录扫描、连接、读写、订阅与宏执行事件；按方向/错误筛选、搜索、复制导出、清空 |
+| **通信日志** | 结构化记录扫描、连接、读写、订阅与宏执行事件；按天分组、按方向/错误筛选、搜索、复制导出（含日期）、清空 |
 | **设置** | 扫描阈值、重复广播、自动停止、期望 MTU、默认格式、演示模式、本地数据清理、使用说明入口 |
 | **使用说明** | 快速开始、页面功能、数据格式、平台限制、隐私说明、演示模式引导 |
 
@@ -51,6 +51,8 @@
 
 - **隐私同意门禁**：首次调用蓝牙前通过 `wx.requirePrivacyAuthorize` 同步用户同意状态，区分「后台未声明」「用户拒绝」「低版本基础库」并给出可重试的引导。
 - **模拟传输层**：演示模式下 `utils/ble.js` 的 `call()` 直接短路到 `utils/demo.js`，所有页面复用同一套事件流，无需为演示写第二套 UI 逻辑。
+- **深色模式**：`app.json` 开启 `darkmode` 并用 `theme.json` 定义导航栏、tabBar 与图标变量，`app.wxss` 及各页面通过 `@media (prefers-color-scheme: dark)` 覆盖；信号曲线会跟随主题重绘。
+- **界面细节**：tabBar 图标（含深色版本）、全面屏安全区适配、写入/宏面板遮罩、按钮触控高度、日志按天分隔、RSSI 曲线纵轴按采样动态缩放。
 
 ## 架构与数据流
 
@@ -168,9 +170,12 @@
 ## 目录结构
 
 ```
-app.js / app.json / app.wxss     全局状态、路由与 tabBar、设计 token
+app.js / app.json / app.wxss     全局状态、路由与 tabBar、设计 token、深色模式覆盖
+theme.json                       浅色 / 深色主题变量（导航栏、tabBar、图标路径）
 project.config.json              开发者工具配置（appid 为占位值）
 sitemap.json                     禁用微信索引
+images/tabbar                    tabBar 图标（普通 + 选中 + 深色选中）
+scripts/gen-tabbar-icons.js      图标生成脚本（改色或改形状后重新生成）
 utils/ble.js                     wx BLE API 的 Promise 封装、连接状态机、事件监听统一管理、演示短路
 utils/privacy.js                 隐私同意门禁与错误提示
 utils/demo.js                    演示模式的模拟设备、服务与通知数据
@@ -204,7 +209,13 @@ for f in app.json project.config.json sitemap.json pages/*/*.json; do \
   node -e "JSON.parse(require('fs').readFileSync('$f','utf8'))"; done
 ```
 
-WXML 标签闭合与 `bind`/`catch` 处理函数也做过全量核对。**尚未验证**：微信开发者工具内的编译、canvas 2d 实际绘制、真机 iOS/Android 的 BLE 时序与权限弹窗。
+WXML 标签闭合与 `bind`/`catch` 处理函数也做过全量核对。tabBar 图标由脚本生成（81×81 PNG，无第三方依赖），改颜色或形状后重新执行：
+
+```bash
+node scripts/gen-tabbar-icons.js
+```
+
+**尚未验证**：微信开发者工具内的编译、深色模式实际效果、canvas 2d 绘制、真机 iOS/Android 的 BLE 时序与权限弹窗。
 
 ## 发布前清单
 

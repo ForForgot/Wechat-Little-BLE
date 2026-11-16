@@ -8,6 +8,8 @@ page {
 
 .page { min-height: 100vh; padding-bottom: 40rpx; }
 .page-bottom { padding-bottom: 220rpx; }
+/* 无 tabBar 的页面（如设备详情）需要自己让出全面屏 home 指示条 */
+.page-bottom-safe { padding-bottom: calc(220rpx + env(safe-area-inset-bottom)); }
 
 .card {
   background: #FFFFFF;
@@ -73,6 +75,8 @@ page {
   justify-content: center;
   font-size: 26rpx;
   padding: 14rpx 28rpx;
+  min-height: 80rpx;
+  box-sizing: border-box;
   border-radius: 12rpx;
   border: 1rpx solid #DCE1E8;
   background: #FFFFFF;
@@ -82,7 +86,8 @@ page {
 .btn-primary { background: #185FA5; border-color: #185FA5; color: #FFFFFF; }
 .btn-ghost { background: #F1F5FA; border-color: #F1F5FA; color: #185FA5; }
 .btn-danger { background: #FFFFFF; border-color: #F3C6C6; color: #A32D2D; }
-.btn-mini { font-size: 22rpx; padding: 8rpx 20rpx; border-radius: 10rpx; }
+/* 小按钮也要保证可点区域，64rpx 约 32px，避免误触 */
+.btn-mini { font-size: 22rpx; padding: 8rpx 24rpx; min-height: 64rpx; border-radius: 10rpx; }
 .btn-block { display: flex; width: 100%; }
 .btn[disabled] { opacity: 0.45; }
 
@@ -144,7 +149,7 @@ page {
   position: relative;
   background: #FFFFFF;
   border-top: 1rpx solid #E3E7ED;
-  padding: 20rpx 24rpx 32rpx;
+  padding: 20rpx 24rpx calc(32rpx + env(safe-area-inset-bottom));
 }
 .fixed-bottom {
   position: fixed;
@@ -156,6 +161,44 @@ page {
   border-top: 1rpx solid #E3E7ED;
   padding: 20rpx 24rpx 32rpx;
 }
+/* tabBar 页面由 tabBar 让出安全区；无 tabBar 的面板需要自己加 */
+.fixed-bottom-safe { padding-bottom: calc(32rpx + env(safe-area-inset-bottom)); }
+/* 面板打开时的遮罩，点击可关闭 */
+.panel-mask {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 19;
+  background: rgba(15, 23, 42, 0.35);
+}
+
+/* 列表可进入的指示箭头 */
+.chevron {
+  width: 14rpx;
+  height: 14rpx;
+  flex-shrink: 0;
+  margin-left: 12rpx;
+  border-top: 3rpx solid #C4CAD3;
+  border-right: 3rpx solid #C4CAD3;
+  transform: rotate(45deg);
+}
+
+/* 连接/枚举中的加载指示 */
+.spinner {
+  width: 28rpx;
+  height: 28rpx;
+  flex-shrink: 0;
+  margin-right: 12rpx;
+  border: 4rpx solid rgba(24, 95, 165, 0.18);
+  border-top-color: #185FA5;
+  border-radius: 50%;
+  animation: app-spin 0.8s linear infinite;
+}
+@keyframes app-spin {
+  to { transform: rotate(360deg); }
+}
 
 .list-item { padding: 20rpx 24rpx; border-bottom: 1rpx solid #EDF0F4; }
 .list-item:last-child { border-bottom: 0; }
@@ -164,3 +207,60 @@ page {
 .log-in { color: #0F6E56; }
 .log-out { color: #185FA5; }
 .log-sys { color: #8A9099; }
+
+/* 深色模式：跟随系统，需在 app.json 开启 darkmode */
+@media (prefers-color-scheme: dark) {
+  page { background: #111418; color: #E8EAED; }
+
+  .card { background: #1A1F26; border-color: #262D36; }
+  .card-head { border-bottom-color: #262D36; }
+  .divider { background: #262D36; }
+  .list-item { border-bottom-color: #262D36; }
+
+  .title { color: #E8EAED; }
+  .subtitle { color: #9AA3AE; }
+  .muted { color: #9AA3AE; }
+  .tiny { color: #6F7883; }
+  .section-title { color: #6F7883; }
+
+  .badge { background: #232A33; color: #B6BFC9; }
+  .badge-info { background: #17324D; color: #8FC3F0; }
+  .badge-success { background: #14352B; color: #7FD3B4; }
+  .badge-warn { background: #3A2E14; color: #F0C46B; }
+  .badge-danger { background: #3A1D1D; color: #F09A9A; }
+
+  .chip { background: #1A1F26; border-color: #333C47; color: #B6BFC9; }
+  .chip-active { background: #2E7FC4; border-color: #2E7FC4; color: #FFFFFF; }
+
+  .btn { background: #1F262E; border-color: #333C47; color: #E8EAED; }
+  .btn-primary { background: #2E7FC4; border-color: #2E7FC4; color: #FFFFFF; }
+  .btn-ghost { background: #1B2A3A; border-color: #1B2A3A; color: #8FC3F0; }
+  .btn-danger { background: #1F262E; border-color: #5A2A2A; color: #F09A9A; }
+
+  .input { background: #141920; border-color: #2A313B; color: #E8EAED; }
+  .search { background: #1A1F26; border-color: #2A313B; }
+  .search .input { background: transparent; }
+
+  .state-bar { background: #17324D; color: #8FC3F0; }
+  .state-bar-warn { background: #3A2E14; color: #F0C46B; }
+  .state-bar-error { background: #3A1D1D; color: #F09A9A; }
+
+  .dot { background: #4A525C; }
+  .dot-on { background: #3FBF97; }
+  .dot-off { background: #E24B4A; }
+
+  .bar { background: #333C47; }
+  .bar-on { background: #6AA9E9; }
+
+  .value-box { background: #141920; color: #E8EAED; }
+  .empty { color: #9AA3AE; }
+  .empty-title { color: #D5DAE0; }
+
+  .toolbar, .fixed-bottom { background: #1A1F26; border-top-color: #2A313B; }
+  .panel-mask { background: rgba(0, 0, 0, 0.55); }
+  .chevron { border-color: #5A646F; }
+
+  .log-in { color: #7FD3B4; }
+  .log-out { color: #8FC3F0; }
+  .log-sys { color: #9AA3AE; }
+}

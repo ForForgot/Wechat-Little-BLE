@@ -1,0 +1,38 @@
+{
+  "light": {
+    "navBg": "#FFFFFF",
+    "navText": "black",
+    "bg": "#F5F7FA",
+    "bgText": "dark",
+    "tabBg": "#FFFFFF",
+    "tabColor": "#8A9099",
+    "tabSelected": "#185FA5",
+    "tabBorder": "black",
+    "scanIcon": "images/tabbar/scan.png",
+    "scanActive": "images/tabbar/scan-active.png",
+    "libraryIcon": "images/tabbar/library.png",
+    "libraryActive": "images/tabbar/library-active.png",
+    "logsIcon": "images/tabbar/logs.png",
+    "logsActive": "images/tabbar/logs-active.png",
+    "settingsIcon": "images/tabbar/settings.png",
+    "settingsActive": "images/tabbar/settings-active.png"
+  },
+  "dark": {
+    "navBg": "#1A1F26",
+    "navText": "white",
+    "bg": "#111418",
+    "bgText": "light",
+    "tabBg": "#1A1F26",
+    "tabColor": "#9AA3AE",
+    "tabSelected": "#6AA9E9",
+    "tabBorder": "white",
+    "scanIcon": "images/tabbar/scan.png",
+    "scanActive": "images/tabbar/scan-active-dark.png",
+    "libraryIcon": "images/tabbar/library.png",
+    "libraryActive": "images/tabbar/library-active-dark.png",
+    "logsIcon": "images/tabbar/logs.png",
+    "logsActive": "images/tabbar/logs-active-dark.png",
+    "settingsIcon": "images/tabbar/settings.png",
+    "settingsActive": "images/tabbar/settings-active-dark.png"
+  }
+}

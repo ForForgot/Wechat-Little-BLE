@@ -7,7 +7,7 @@
     <view class="chip {{!favoritesOnly && !onlyConnectable && rssiThreshold <= -95 ? 'chip-active' : ''}}" bindtap="resetFilters">全部</view>
     <view class="chip {{favoritesOnly ? 'chip-active' : ''}}" bindtap="toggleFavorites">已收藏</view>
     <view class="chip {{onlyConnectable ? 'chip-active' : ''}}" bindtap="toggleConnectable">仅可连接</view>
-    <view class="chip {{rssiThreshold > -95 ? 'chip-active' : ''}}" bindtap="toggleStrong">强信号</view>
+    <view class="chip {{rssiThreshold > -95 ? 'chip-active' : ''}}" bindtap="toggleStrong">信号 &gt; -70</view>
   </view>
 
   <view wx:if="{{notice}}" class="state-bar state-bar-error">
@@ -36,12 +36,13 @@
         <view class="title ellipsis">{{item.name}}</view>
         <view class="subtitle ellipsis">{{item.subtitle}}</view>
       </view>
-      <view style="text-align:right;margin-left:16rpx;flex-shrink:0">
-        <view class="muted">{{item.rssiText}}</view>
-        <view class="signal" style="justify-content:flex-end;margin-top:8rpx">
+      <view class="row gap8" style="margin-left:16rpx;flex-shrink:0">
+        <view class="signal">
           <view wx:for="{{item.bars}}" wx:for-item="bar" class="bar {{bar.on ? 'bar-on' : ''}}" style="height:{{bar.h}}rpx"></view>
         </view>
+        <text class="muted">{{item.rssiText}}</text>
       </view>
+      <view class="chevron"></view>
     </view>
 
     <view class="row wrap gap8" style="margin-top:16rpx">

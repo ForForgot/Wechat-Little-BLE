@@ -8,7 +8,7 @@
   </view>
 
   <view class="state-bar">
-    <view class="row"><view class="dot dot-on"></view><text>共 {{total}} 条记录 · 当前显示 {{logs.length}} 条</text></view>
+    <view class="row"><view class="dot dot-on"></view><text>共 {{total}} 条 · 显示 {{shown}} 条 · 点按单条复制</text></view>
   </view>
 
   <view wx:if="{{logs.length === 0}}" class="empty">
@@ -17,14 +17,17 @@
   </view>
 
   <view class="card card-flat">
-    <view wx:for="{{logs}}" wx:key="id" class="list-item" bindtap="bindItem" data-data="{{item.data}}">
-      <view class="row gap12">
-        <text class="log-dir {{item.dirClass}}">{{item.dirLabel}}</text>
-        <text class="tiny mono" style="flex-shrink:0">{{item.time}}</text>
-        <text class="grow title ellipsis {{item.ok ? '' : 'badge-danger'}}" style="font-size:26rpx">{{item.title}}</text>
+    <block wx:for="{{logs}}" wx:key="id">
+      <view wx:if="{{item.sep}}" class="log-date">{{item.label}}</view>
+      <view wx:else class="list-item" bindtap="bindItem" data-data="{{item.data}}">
+        <view class="row gap12">
+          <text class="log-dir {{item.dirClass}}">{{item.dirLabel}}</text>
+          <text class="tiny mono" style="flex-shrink:0">{{item.time}}</text>
+          <text class="grow title ellipsis {{item.ok ? '' : 'log-error'}}" style="font-size:26rpx">{{item.title}}</text>
+        </view>
+        <view wx:if="{{item.data}}" class="value-box mono" style="margin-top:10rpx">{{item.data}}</view>
       </view>
-      <view wx:if="{{item.data}}" class="value-box mono" style="margin-top:10rpx">{{item.data}}</view>
-    </view>
+    </block>
   </view>
 
   <view class="fixed-bottom row gap12">

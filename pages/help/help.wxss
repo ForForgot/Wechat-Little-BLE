@@ -14,3 +14,8 @@
 }
 .help-row:last-child { border-bottom: 0; }
 .help-row .title { display: block; margin-bottom: 4rpx; }
+
+@media (prefers-color-scheme: dark) {
+  .help-step { color: #E8EAED; }
+  .help-row { border-bottom-color: #262D36; }
+}
