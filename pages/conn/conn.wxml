@@ -134,7 +134,7 @@
     <view wx:if="{{macroList.length === 0}}" class="empty" style="padding:40rpx">
       <view class="empty-desc">还没有宏，去「调试库」创建</view>
     </view>
-    <view wx:for="{{macroList}}" wx:key="id" class="row gap12" style="padding:14rpx 0;border-bottom:1rpx solid #EDF0F4">
+    <view wx:for="{{macroList}}" wx:key="id" class="row gap12 macro-row">
       <view class="grow">
         <text class="strong">{{item.name}}</text>
         <text class="muted"> · {{item.stepCount}} 步</text>
